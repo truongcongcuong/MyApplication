@@ -23,9 +23,9 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
-@ComponentScan("spring")
-@PropertySource({ "classpath:persistence-mssql.properties" })
-public class AppConfig implements WebMvcConfigurer {
+@ComponentScan("entity")
+@PropertySource({"classpath:persistence-mssql.properties"})
+public class AppConfig implements WebMvcConfigurer{
     @Autowired
     private Environment env;
 
@@ -34,12 +34,12 @@ public class AppConfig implements WebMvcConfigurer {
         ComboPooledDataSource myDataSource = new ComboPooledDataSource();
         try {
             myDataSource.setDriverClass(env.getProperty("jdbc.driver"));
-        } catch (PropertyVetoException exc) {
-            throw new RuntimeException(exc);
+        } catch (PropertyVetoException e) {
+            throw new RuntimeException(e);
         }
 
         myDataSource.setJdbcUrl(env.getProperty("jdbc.url"));
-        myDataSource.setUser(env.getProperty("jdbc.user"));
+        myDataSource.setUser(env.getProperty("jdbc.username"));
         myDataSource.setPassword(env.getProperty("jdbc.password"));
 
         myDataSource.setInitialPoolSize(getIntProperty("connection.pool.initialPoolSize"));
@@ -57,27 +57,27 @@ public class AppConfig implements WebMvcConfigurer {
         return props;
     }
 
-    private int getIntProperty(String propName) {
-        String propVal = env.getProperty(propName);
-        int intPropVal = Integer.parseInt(propVal);
-        return intPropVal;
+    private int getIntProperty(String string) {
+        String valProps = env.getProperty(string);
+        int intValProps = Integer.parseInt(valProps);
+        return intValProps;
     }
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(myDataSource());
-        sessionFactory.setPackagesToScan(env.getProperty("hibernate.packagesToScan"));
         sessionFactory.setHibernateProperties(getHibernateProperties());
+        sessionFactory.setPackagesToScan(env.getProperty("hibernate.packagesToScan"));
         return sessionFactory;
     }
 
     @Bean
     @Autowired
     public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
-        HibernateTransactionManager txManager = new HibernateTransactionManager();
-        txManager.setSessionFactory(sessionFactory);
-        return txManager;
+        HibernateTransactionManager manager = new HibernateTransactionManager();
+        manager.setSessionFactory(sessionFactory);
+        return manager;
     }
 
 }
